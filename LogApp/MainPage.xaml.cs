@@ -1,17 +1,21 @@
-﻿using System.Net.Http.Json;
-using MetroLog.Maui;
+﻿using LogApp.Services.ServicesManager;
+using LogApp.Services.ServicesManager.Models;
+
+using System.Net.Http.Headers;
+using System.Text;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using LogApp.Services;
 
 namespace LogApp;
 
 public partial class MainPage : ContentPage
 {
 	int count = 0;
-
-	string text = "\n++++++++++++++ OnCounterClicked MainPage {DT}";
-
 	ILogger<MainPage> _logger;
 	private readonly HttpClient _httpClient;
+
 	public MainPage(ILogger<MainPage> logger, HttpClient httpClient)
 	{
 		InitializeComponent();
@@ -19,7 +23,7 @@ public partial class MainPage : ContentPage
 		_httpClient = httpClient;
 	}
 
-	private void OnCounterClicked(object sender, EventArgs e)
+	private async void OnCounterClicked(object sender, EventArgs e)
 	{
 		count++;
 
@@ -28,10 +32,10 @@ public partial class MainPage : ContentPage
 		else
 			CounterBtn.Text = $"Clicked {count} times";
 
-		_logger.LogInformation(CounterBtn.Text , DateTime.UtcNow.ToLongTimeString());
-		Console.WriteLine(text);
-	
+		//_logger.LogInformation(CounterBtn.Text , DateTime.UtcNow.ToLongTimeString());
 		SemanticScreenReader.Announce(CounterBtn.Text);
+
+		await Navigation.PushAsync(new CommentPage());
 		
 	}
 
@@ -50,8 +54,16 @@ public partial class MainPage : ContentPage
 				{ DevicePlatform.Android, new[] {"*/*.log", "*/*.Log", "*/*.LOG"} }
 			});
 
-			PickOptions options = new PickOptions();
-			await PickToSend(options);
+			string token = await GetToken();
+			if (String.IsNullOrEmpty(token))
+			{
+				await DisplayAlert("Mensaje","Upps!, algo ocurrio...","ok");
+			}
+			else
+			{				
+				PickOptions options = new PickOptions();
+				await PickToSend(options, token);
+			}
 		}
 	}
 
@@ -60,7 +72,7 @@ public partial class MainPage : ContentPage
 	/// </summary>
 	/// <param name="options"></param>
 	/// <returns></returns>
-	public async Task<FileResult> PickToSend(PickOptions options)
+	public async Task<FileResult> PickToSend(PickOptions options, string token)
 	{
 		try
 		{
@@ -69,7 +81,7 @@ public partial class MainPage : ContentPage
 			{
 				using var stream = await result.OpenReadAsync();
 				var broxelLog = ImageSource.FromStream(() => stream);
-				await UploadFileAsync(stream, result.FileName);
+				await UploadFileAsync(stream, result.FileName, token);
 			}
 			//return result;
 		}catch (Exception ex)
@@ -85,7 +97,7 @@ public partial class MainPage : ContentPage
 	/// <param name="fileStream"></param>
 	/// <param name="filename"></param>
 	/// <returns></returns>
-	async Task UploadFileAsync(Stream fileStream, string filename)
+	async Task UploadFileAsync(Stream fileStream, string filename, string token)
 	{
 		try
 		{
@@ -95,8 +107,9 @@ public partial class MainPage : ContentPage
 			Console.WriteLine(filename + "en upload" );
 
 			content.Add(contenido,"file",filename);
-			//Console.WriteLine(content.FirstOrDefault().ReadAsStringAsync());
-			using var response = await _httpClient.PostAsync("v2/stream/",content);
+			_httpClient.DefaultRequestHeaders.Accept.Clear();
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+			using var response = await _httpClient.PostAsync("api/logservice/",content);
 			if(response.IsSuccessStatusCode)
 			{
 				var file = await response.Content.ReadAsStringAsync();
@@ -111,29 +124,33 @@ public partial class MainPage : ContentPage
 		}
 
 	}
+
 	// línea para tomar la ruta de archivo 
 	//var files = Directory.GetFiles(<FolderPath>)
-	async Task<string> GetToken()
+	public async Task<string> GetToken()
 	{
+		string? TokenLog=null;
 		try
 		{
-			var usuario = new UserCredentials();
-			usuario.UserName = "John Tobbias";
-			usuario.Password = "1234"; 
-			//var content = new Hea
+			string  usuario = "{ 'Username' : 'John Tobbias' , 'Password': '1234' }";
+			_httpClient.DefaultRequestHeaders.Clear();
+			using dynamic jsonString = JObject.Parse(usuario);
+			using var httpContent = new StringContent(jsonString.ToString(), Encoding.UTF8,"application/json");
 			
-			using var response = await _httpClient.PostAsJsonAsync("api/auth/token2","");
+			using var response =  await _httpClient.PostAsync("api/auth/token",httpContent);
 			if(response.IsSuccessStatusCode)
 			{
 				var jsonresponse = await response.Content.ReadAsStringAsync();
-				await DisplayAlert("Mensaje","token","ok");
+				var result = JsonConvert.DeserializeObject<JsonLogToken>(jsonresponse);
+				TokenLog = result?.TokenLog;
 			}
 		
 		}catch(HttpRequestException ex)
 		{
 			await DisplayAlert("Mensaje","Upps! algo ocurrio durante el envio","ok");
+			Console.WriteLine(ex.Message.ToString());
 		}
-		return "";
+		return TokenLog;
 	}
 	
 }

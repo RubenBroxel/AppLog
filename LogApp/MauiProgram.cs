@@ -1,6 +1,7 @@
 ﻿using MetroLog.Operators;
 using MetroLog.MicrosoftExtensions;
 using Microsoft.Extensions.Logging;
+using LogApp.Services;
 
 namespace LogApp;
 
@@ -25,7 +26,7 @@ public static class MauiProgram
 		{
 			return new HttpClient()
 			{
-				BaseAddress = new Uri("http://localhost:5084/")
+				BaseAddress = new Uri("http://10.100.8.5:8080/")
 			};
 		});
 
@@ -52,6 +53,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton(LogOperatorRetriever.Instance);
 	    builder.Services.AddSingleton<MainPage>();
+	    builder.Services.AddSingleton<CommentPage>();
 
 #if DEBUG
 		builder.Logging.AddDebug();
