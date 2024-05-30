@@ -2,6 +2,10 @@
 using MetroLog.MicrosoftExtensions;
 using Microsoft.Extensions.Logging;
 using LogApp.Services;
+using LogApp.Services.ServicesManager;
+using LogApp.Services.Security;
+using LogApp.Services.Security.Contracts;
+
 
 namespace LogApp;
 
@@ -48,17 +52,42 @@ public static class MauiProgram
                 options =>
                 {
                     options.RetainDays = 1;
-                    options.FolderPath = Path.Combine( PATH_LOG, FILE_LOG_NAME);
+                    options.FolderPath = Path.Combine( PATH_LOG, FILE_LOG_NAME );
                 });
 
-        builder.Services.AddSingleton(LogOperatorRetriever.Instance);
-	    builder.Services.AddSingleton<MainPage>();
-	    builder.Services.AddSingleton<CommentPage>();
-
-#if DEBUG
+        #if DEBUG
 		builder.Logging.AddDebug();
-#endif
-
+        #endif
+		builder.RegisterServices();
+		builder.RegisterViews();
 		return builder.Build();
+	}
+
+
+	public static MauiAppBuilder RegisterServices(this MauiAppBuilder mauiAppBuilder)
+	{
+		mauiAppBuilder.Services.AddTransient<HttpClient>(o =>
+		{
+			return new HttpClient()
+			{
+				BaseAddress = new Uri("http://10.100.8.5:8080/")
+			};
+		});
+		mauiAppBuilder.Services.AddTransient<IFileServices,LocalServices>();
+		mauiAppBuilder.Services.AddTransient<IFileServices,LocalServices>();
+		mauiAppBuilder.Services.AddTransient<IMicroServices,MicroServices>();
+		mauiAppBuilder.Services.AddTransient<IUserSessionServices,UserSessionServices>();
+		mauiAppBuilder.Services.AddTransient<IManager,Manager>();
+
+		return mauiAppBuilder;
+	}
+
+
+	public static MauiAppBuilder RegisterViews(this MauiAppBuilder mauiAppBuilder)
+	{
+		mauiAppBuilder.Services.AddSingleton<MainPage>();
+		mauiAppBuilder.Services.AddSingleton<CommentPage>();
+		mauiAppBuilder.Services.AddSingleton(LogOperatorRetriever.Instance);
+		return mauiAppBuilder;
 	}
 }

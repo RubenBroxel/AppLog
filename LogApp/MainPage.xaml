@@ -19,6 +19,18 @@
                 SemanticProperties.HeadingLevel="Level2"
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
 
+            <Editor 
+                x:Name="UserEdt"
+                Placeholder="Usuario"
+                MaxLength="400"/>
+
+            <Entry 
+                x:Name="PasswordEdt"
+                Placeholder="Password"
+                IsPassword="True"
+                MaxLength="400"/>
+
+
             <Button
                 x:Name="CounterBtn"
                 Text="Click me" 

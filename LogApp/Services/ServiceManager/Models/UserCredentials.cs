@@ -1,6 +1,14 @@
 namespace LogApp.Services.ServicesManager.Models;
 public class UserCredentials
 {
-    public string? UserName { get; set; }
-    public string? Password { get; set; }
+    private string? UserName { get; set; }
+    private string? UserPassword { get; set; }
+
+
+    public UserCredentials(string userName, string userPassword)
+    {
+        UserName = userName;
+        UserPassword = userPassword;
+    }
+    
 }

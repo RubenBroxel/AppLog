@@ -7,19 +7,17 @@
         <VerticalStackLayout
             Padding="30,0"
             Spacing="25">
+        <Label Text="Comente incidencias" HorizontalTextAlignment="Center" TextColor="Black" FontSize="36"/>
+       
 
-            <Label
-                Text="Comente insidencias"
-                Style="{StaticResource Headline}"
-                SemanticProperties.HeadingLevel="Level1" />
-                
-            <Label Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. In facilisis nulla eu felis fringilla vulputate. Nullam porta eleifend lacinia. Donec at iaculis tellus."
+        <Label Text="Tu opinión es muy importante para nosotros. Para ayudarnos a solucionar este problema de la manera más eficiente posible, por favor, utiliza la caja de comentarios para proporcionarnos la mayor cantidad de detalles posible"
                 LineBreakMode="WordWrap"
-                LineHeight="1.8" />
+                Padding="8"
+                VerticalTextAlignment="Center"/>
 
             <Editor
                 x:Name="CommentEdt"
-                Placeholder="Coloque un comentario"
+                Placeholder="Limite del Comentario son 400 Caracteres"
                 HeightRequest="250"
                 MaxLength="400"
              />

@@ -1,25 +1,56 @@
 
-
-
 namespace LogApp.Services.ServicesManager.Models;
 public class LogMicroService
 {
-    //api
-    private string? PATH_SERVICE { get; set; }
-    //"auth/token
-    private string? SESSION_ACCOUNT_SERVICE { get; set; }
-    //logservice
-    private string? LOGFILE_UPLOAD_SERVICE { get; set; }
+    //
+    private Stream? FileStream;
+    private string? FileName;
+    private string? TokenValid;
 
+    #region Variables privadas
+    private readonly string? PATH_SERVICE = "api";
+    private readonly string? TYPE_SUPPORT = "file";
+    private readonly string? SESSION_ACCOUNT_SERVICE = "auth/token"; 
+    private readonly string? LOGFILE_UPLOAD_SERVICE = "logservice";
+    #endregion
 
-
-    public string InvokeTokenService()
+    public LogMicroService(Stream fileStream, string fileName, string tokenUser)
     {
-        return PATH_SERVICE + "/"+ LOGFILE_UPLOAD_SERVICE;
+        FileStream = fileStream;
+        FileName   = fileName;
+        TokenValid = tokenUser;
     }
 
+
+    public Stream InvokeLogObject()
+    {
+        return FileStream;
+    } 
+
+    public string InvokeLogObjectName()
+    {
+        return FileName;
+    }
+
+    public string InvokeLogObjectValidator()
+    {
+        return TokenValid;
+    }
+
+    //obtenemos el end-point para subir archivo 
     public string InvokeLogService()
+    {
+        return PATH_SERVICE + "/" + LOGFILE_UPLOAD_SERVICE;
+    }
+
+    //obtenemos el token
+    public string InvokeTokenService()
     {
         return PATH_SERVICE + "/" + SESSION_ACCOUNT_SERVICE;
     }  
+
+    public string InvokeSuport()
+    {
+        return TYPE_SUPPORT;
+    }
 }

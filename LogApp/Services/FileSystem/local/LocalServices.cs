@@ -1,49 +1,27 @@
 using Microsoft.Maui.Storage;
 using System.Text;
 
-public class SecureStorageService: IFileServices
+
+ /*
+    Descripcion:
+    Clase para activar el envio de archivos al MicroServicio para Logs
+    Secuencia de ejecución:
+    [1]:Ejecutar el PrepareUploadFile(); :: { Método Privado }
+    [2]:Ejecutar el PickToSendAsync();   :: { Método Privado }
+    [3]:Ejecutar el UploadFileAsync(LogMicroService); { Método Publico }
+*/
+public class LocalServices: IFileServices
 {
+    private readonly HttpClient _httpClient;
     private const string FileNameKey = "MySecureFile";
 
-    public async Task SaveFileSecurelyAsync(string storageKey, string storageSecret)
+    public LocalServices(HttpClient httpClient)
     {
-        try
-        {
-            await SecureStorage.SetAsync("MyKey", "MySecretValue");
-        }
-        catch (Exception ex)
-        {
-            // Posible error al guardar en SecureStorage
-            Console.WriteLine($"Error al guardar en SecureStorage: {ex.Message}");
-        }
+        _httpClient = httpClient;
     }
 
-    public async Task GetFileSecureAsync(string storageKey)
+    public async Task UploadFileAsync(Stream fileStream, string filename, string token)
     {
-        try
-        {
-        string myValue = await SecureStorage.GetAsync("MyKey");
-        if (!string.IsNullOrEmpty(myValue))
-        {
-            // Usar el valor recuperado
-            Console.WriteLine($"Valor recuperado: {myValue}");
-        }
-        else
-        {
-            // La clave no existe o no se encontró ningún valor.
-            Console.WriteLine("No se encontró la clave en SecureStorage.");
-        }
-        }
-        catch (Exception ex)
-        {
-            // Posible error al obtener datos de SecureStorage
-            Console.WriteLine($"Error al obtener datos de SecureStorage: {ex.Message}");
-        }
-    }
 
-    public async Task DeleteFileSecureAsync()
-    {
-         SecureStorage.RemoveAll();
     }
-
 }

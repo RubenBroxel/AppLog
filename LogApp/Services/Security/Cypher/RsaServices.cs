@@ -1,21 +1,10 @@
-
-using System;
-using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
-namespace LogApp.Services.ServicesManager.Models;
-
-public class LogLocal
+namespace LogApp.Services.Security.Cypher;
+public class RsaServices
 {
     private const int KeySize = 2048;
-
     private string? LogAccess = Guid.NewGuid().ToString() + "-" + DateTime.Today.ToString();
-
-    public string GetKey()
-    {
-        return LogAccess;
-    }
 
     public static void GenerateKeys(out string publicKey, out string privateKey)
     {

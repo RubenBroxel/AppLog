@@ -16,7 +16,7 @@ public partial class MainPage : ContentPage
 	ILogger<MainPage> _logger;
 	private readonly HttpClient _httpClient;
 
-	public MainPage(ILogger<MainPage> logger, HttpClient httpClient)
+	public MainPage( ILogger<MainPage> logger, HttpClient httpClient )
 	{
 		InitializeComponent();
 		_logger = logger;
@@ -32,7 +32,6 @@ public partial class MainPage : ContentPage
 		else
 			CounterBtn.Text = $"Clicked {count} times";
 
-		//_logger.LogInformation(CounterBtn.Text , DateTime.UtcNow.ToLongTimeString());
 		SemanticScreenReader.Announce(CounterBtn.Text);
 
 		await Navigation.PushAsync(new CommentPage());
@@ -153,5 +152,7 @@ public partial class MainPage : ContentPage
 		return TokenLog;
 	}
 	
+
+
 }
 
