@@ -7,20 +7,24 @@ namespace LogApp.Services;
 public partial class CommentPage : ContentPage
 {
 	private IManager _manager;
-	public CommentPage()
+	IServiceProvider _provider;
+	public CommentPage(IManager manager)
 	{
 		InitializeComponent();
-		_manager = DependencyService.Get<IManager>();
+		_manager = manager;
 	}
 
    	private async void OnCounterClicked(object sender, EventArgs e)
 	{
-		_manager.MicroServiceAuthAsync();
+		string user = "John Tobbias";
+		string pass = "1234";
+		
 		//string pasword = "";
-
 		//await Xamarin.Essentials.SecureStorage.SetAsync("Password",SendCommentBtn.Text);
 		try
 		{
+			UserCredentials userCredentials = new UserCredentials(user,pass);
+			_manager.MicroServiceAuthAsync(userCredentials);
 			//_logger.LogInformation(CounterBtn.Text , DateTime.UtcNow.ToLongTimeString());
 			//pasword = await Xamarin.Essentials.SecureStorage.GetAsync("Password");
 			//await DisplayAlert("Secure Success",pasword,"Ok");

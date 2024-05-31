@@ -5,13 +5,15 @@ using LogApp.Services;
 using LogApp.Services.ServicesManager;
 using LogApp.Services.Security;
 using LogApp.Services.Security.Contracts;
+using LogApp.Services.ServicesManager.Models;
+using LogApp.Services.Security.Storage;
 
 
 namespace LogApp;
 
 public static class MauiProgram
 {
-
+	//FileSystem.Current.AppDataDirectory(data/user/0/com.demotechnical.logapp/files/DemoTechnical)
 	static string PATH_LOG="/storage/emulated/0/Android/data/com.demotechnical.logapp/";
 	const string FILE_LOG_NAME = "DemoTechnical";
 
@@ -25,14 +27,6 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
-		
-		builder.Services.AddTransient<HttpClient>(o =>
-		{
-			return new HttpClient()
-			{
-				BaseAddress = new Uri("http://10.100.8.5:8080/")
-			};
-		});
 
 		builder.Logging
             .AddTraceLogger(
@@ -53,12 +47,15 @@ public static class MauiProgram
                 {
                     options.RetainDays = 1;
                     options.FolderPath = Path.Combine( PATH_LOG, FILE_LOG_NAME );
+                    //options.FolderPath = Path.Combine( FileSystem.Current.AppDataDirectory,FILE_LOG_NAME); //PATH_LOG, FILE_LOG_NAME );
                 });
 
         #if DEBUG
 		builder.Logging.AddDebug();
+		Console.WriteLine(FileSystem.Current.AppDataDirectory.ToString());
         #endif
 		builder.RegisterServices();
+		builder.RegisterModels();
 		builder.RegisterViews();
 		return builder.Build();
 	}
@@ -73,15 +70,25 @@ public static class MauiProgram
 				BaseAddress = new Uri("http://10.100.8.5:8080/")
 			};
 		});
-		mauiAppBuilder.Services.AddTransient<IFileServices,LocalServices>();
-		mauiAppBuilder.Services.AddTransient<IFileServices,LocalServices>();
+	
 		mauiAppBuilder.Services.AddTransient<IMicroServices,MicroServices>();
+		mauiAppBuilder.Services.AddTransient<IFileServices,LocalServices>();
+		mauiAppBuilder.Services.AddTransient<IStorageService,StorageService>();
 		mauiAppBuilder.Services.AddTransient<IUserSessionServices,UserSessionServices>();
 		mauiAppBuilder.Services.AddTransient<IManager,Manager>();
 
 		return mauiAppBuilder;
 	}
 
+	public static MauiAppBuilder RegisterModels(this MauiAppBuilder mauiAppBuilder)
+	{
+		mauiAppBuilder.Services.AddSingleton<JsonLogToken>();
+		mauiAppBuilder.Services.AddSingleton<LogLocal>();
+		mauiAppBuilder.Services.AddSingleton<LogMicroService>();
+		mauiAppBuilder.Services.AddSingleton<UserCredentials>();
+
+		return mauiAppBuilder;
+	}
 
 	public static MauiAppBuilder RegisterViews(this MauiAppBuilder mauiAppBuilder)
 	{

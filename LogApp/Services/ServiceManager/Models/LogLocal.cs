@@ -62,5 +62,4 @@ public class LogLocal
 
     // Guardar datos descifrados
     File.WriteAllBytes(filePath + ".dec", decryptedData);*/
-
 }

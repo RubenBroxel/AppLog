@@ -1,13 +1,13 @@
 using System.Net.Http.Headers;
 using LogApp.Services.ServicesManager.Models;
 
- /*
-    Descripcion:
-    Clase para activar el envio de archivos al MicroServicio para Logs
-    Secuencia de ejecución:
-    [1]:Ejecutar el PrepareUploadFile(); :: { Método Privado }
-    [2]:Ejecutar el PickToSendAsync();   :: { Método Privado }
-    [3]:Ejecutar el UploadFileAsync(LogMicroService); { Método Publico }
+/*
+   Descripcion:
+   Clase para activar el envio de archivos al MicroServicio para Logs
+   Secuencia de ejecución:
+   [1]:Ejecutar el PrepareUploadFile(); :: { Método Privado }
+   [2]:Ejecutar el PickToSendAsync();   :: { Método Privado }
+   [3]:Ejecutar el UploadFileAsync(LogMicroService); { Método Publico }
 */
 public class MicroServices: IMicroServices
 {
@@ -33,10 +33,14 @@ public class MicroServices: IMicroServices
 
         try
 		{   
-            var filePicker = await FilePicker.Default.PickAsync(options);
+            /*
+            var filePicker = await FilePicker.Default.PickAsync();//options);
             if(filePicker != null )
+            {*/
+            if( logMicroService.InvokeLogObject() != null)
             {
-                using var stream = await filePicker.OpenReadAsync();
+
+                using var stream = logMicroService.InvokeLogObject();//await filePicker.OpenReadAsync();
                 var broxelLog = ImageSource.FromStream(() => stream);
 
                 using var content = new MultipartFormDataContent();
@@ -63,6 +67,7 @@ public class MicroServices: IMicroServices
 			    Console.WriteLine( ex.Message.ToString());
             #endif
 		}
+        
         return result;
     }
 }

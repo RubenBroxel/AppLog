@@ -1,38 +1,42 @@
 
 using LogApp.Services.Security.Contracts;
+using LogApp.Services.Security.Cypher;
 using LogApp.Services.ServicesManager.Models;
+using System.Text;
 
 namespace LogApp.Services.ServicesManager;
 
-/// <summary>
-/// Descripcion:
-///	  Clase para activar el envio de archivos al MicroServicio para Logs
-///	  Secuencia de ejecución:
-///	  [1]:Ejecutar Carga se sesión 
-///	  [2]:Ejecutar Seguridad al cargar sesión
-///   [2]:Ejecutar Preparación de subida del Archivo *.log con información
-///	  [3]:Ejecutar Subir archivo a Micro Servicio 
-///	  [4]:Ejecutar Eliminación de archivo seguro y terminar la sesión para Micro Servicio
-/// </summary>
 public class Manager : IManager
 {
-	//private readonly IMicroServices _microServices;
 	private readonly IUserSessionServices _userSessionServices;
-
-	public Manager()
+	private readonly IMicroServices _microServices;
+	private readonly IFileServices _fileServices;
+	public Manager(IUserSessionServices userSessionServices, IMicroServices microServices, IFileServices fileServices)
 	{
-		//_microServices = microServices;
-		_userSessionServices = DependencyService.Get<IUserSessionServices>();
+		_userSessionServices = userSessionServices;
+		_microServices = microServices;
+		_fileServices  = fileServices;
 	}
 
-	/*
-	e.StackTrace
-	*/
-	public async void MicroServiceAuthAsync()//UserCredentials userCredentials)
-	{
-		
-		var response = await _userSessionServices.GetTokenServiceAsync();//userCredentials);
-		Console.WriteLine(response);
-		//_microServices.MicroServicesAsync(logMicroService);
-	}
+    public async Task<string> MicroServiceAuthAsync(UserCredentials userCredentials)
+    {
+		//ToDo: buscar el archivo log dentro del celular usando la ruta 
+		//predeterminada y el nombre de la carpeta dela aplicacion
+        var token = await _userSessionServices.GetTokenServiceAsync(userCredentials);
+		var log = new RsaServices();
+
+		var logKey = log.GetKey();
+		// Encriptar datos
+		var dataToEncrypt = Encoding.UTF8.GetBytes(logKey);
+		var encryptedData = log.EncryptData(dataToEncrypt);
+	
+		LogMicroService logMicroService = new LogMicroService(_fileServices.SearchLogFile(),logKey,token);
+		var response = await _microServices.MicroServicesAsync(logMicroService);
+        //Console.WriteLine(response);
+
+		// Desencriptar datos
+		var decryptedData = log.DecryptData(encryptedData);
+		var decryptedMessage = Encoding.UTF8.GetString(decryptedData);
+		return response;
+    }
 }

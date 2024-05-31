@@ -16,17 +16,19 @@ public partial class MainPage : ContentPage
 	ILogger<MainPage> _logger;
 	private readonly HttpClient _httpClient;
 
-	public MainPage( ILogger<MainPage> logger, HttpClient httpClient )
+	private readonly IServiceProvider _serviceProvider;
+
+	public MainPage(IServiceProvider serviceProvider ,ILogger<MainPage> logger, HttpClient httpClient )
 	{
 		InitializeComponent();
 		_logger = logger;
 		_httpClient = httpClient;
+		_serviceProvider = serviceProvider;
 	}
 
 	private async void OnCounterClicked(object sender, EventArgs e)
 	{
 		count++;
-
 		if (count == 1)
 			CounterBtn.Text = $"Clicked {count} time";
 		else
@@ -34,7 +36,8 @@ public partial class MainPage : ContentPage
 
 		SemanticScreenReader.Announce(CounterBtn.Text);
 
-		await Navigation.PushAsync(new CommentPage());
+		var commentPage = _serviceProvider.GetRequiredService<CommentPage>();
+        await Navigation.PushAsync(commentPage);
 		
 	}
 
