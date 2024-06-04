@@ -1,13 +1,10 @@
 using System.Net.Http.Headers;
 using LogApp.Services.ServicesManager.Models;
 
+namespace LogApp.Services.FileSystem.MicroService;
 /*
    Descripcion:
    Clase para activar el envio de archivos al MicroServicio para Logs
-   Secuencia de ejecución:
-   [1]:Ejecutar el PrepareUploadFile(); :: { Método Privado }
-   [2]:Ejecutar el PickToSendAsync();   :: { Método Privado }
-   [3]:Ejecutar el UploadFileAsync(LogMicroService); { Método Publico }
 */
 public class MicroServices: IMicroServices
 {
@@ -21,26 +18,15 @@ public class MicroServices: IMicroServices
         _httpClient = httpClient;
     }
 
-
     public async Task<string> MicroServicesAsync(LogMicroService logMicroService)
 	{
         string? result = null;
-        var customFileTypes = new  FilePickerFileType (new Dictionary<DevicePlatform, IEnumerable<string>> 
-        {
-            { DevicePlatform.Android, new[] {"*/*.log", "*/*.Log", "*/*.LOG"} }
-        });
-        PickOptions options = new PickOptions();
-
         try
 		{   
-            /*
-            var filePicker = await FilePicker.Default.PickAsync();//options);
-            if(filePicker != null )
-            {*/
             if( logMicroService.InvokeLogObject() != null)
             {
 
-                using var stream = logMicroService.InvokeLogObject();//await filePicker.OpenReadAsync();
+                using var stream = logMicroService.InvokeLogObject();
                 var broxelLog = ImageSource.FromStream(() => stream);
 
                 using var content = new MultipartFormDataContent();
@@ -60,20 +46,20 @@ public class MicroServices: IMicroServices
                 }
                 else
                 {
+                    result = UPLOAD_SERVICE_FAILD;
                     #if DEBUG
-			        Console.WriteLine("Algo paso");
+			        Console.WriteLine(UPLOAD_SERVICE_FAILD);
                     #endif
                 }
             }
 		}
-		catch(HttpRequestException ex)
+		catch(Exception ex)
 		{
             result = UPLOAD_SERVICE_FAILD;
 			#if DEBUG
 			    Console.WriteLine( ex.Message.ToString());
             #endif
 		}
-        
         return result;
     }
 }

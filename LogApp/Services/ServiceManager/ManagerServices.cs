@@ -1,5 +1,3 @@
-
-using Java.Util.Logging;
 using LogApp.Services.Security.Contracts;
 using LogApp.Services.Security.Cypher;
 using LogApp.Services.ServicesManager.Models;
@@ -21,22 +19,20 @@ public class Manager : IManager
 		_microServices = microServices;
 		_fileServices  = fileServices;
 		_storageServices = storageService;
-		//_logger=logger;
 	}
 
     public async Task<string> MicroServiceAuthAsync(UserCredentials userCredentials)
     {
-		//_logger.LogInformation(CounterBtn.Text , DateTime.UtcNow.ToLongTimeString());
 		await _storageServices.SaveSecurePathAsync();
         var token = await _userSessionServices.GetTokenServiceAsync(userCredentials);
 		var path  = await _storageServices.GetSecurePathAsync();
-		LogMicroService logMicroService = new LogMicroService(_fileServices.SearchLogFile(path),"eee",token);
+		LogMicroService logMicroService = new LogMicroService(_fileServices.SearchLogFile(path) ?? Stream.Null,"eee",token);
 		var response = await _microServices.MicroServicesAsync(logMicroService);
 		if(response != null)
 		{
 			await _storageServices.RemoveSecureAsync();
 		}
 		
-		return response;
+		return response ?? "";
     }
 }

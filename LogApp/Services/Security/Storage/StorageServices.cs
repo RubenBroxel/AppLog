@@ -1,8 +1,4 @@
-using Microsoft.Maui.Storage;
-using System.Threading.Tasks;
 using LogApp.Services.Security.Contracts;
-
-
 
 namespace LogApp.Services.Security.Storage;
 
@@ -12,16 +8,20 @@ public class StorageService: IStorageService
 
         /// <summary>
         /// Guarda una ruta de forma segura utilizando SecureStorage.
-        /// </summary>d53ae36d-90ed-45d8-b804-d6a6fc2a1063
-        /// <param name="path">La ruta a guardar.</param>
+        /// </summary>
         /// <returns>Un valor booleano que indica si la operación se realizó correctamente.</returns>
         public async Task<bool> SaveSecurePathAsync()
         {
             try
             {
-                string path = "/storage/emulated/0/Android/data/com.demotechnical.logapp/DemoTechnical";
-                //string path = FileSystem.Current.AppDataDirectory();
-                await SecureStorage.SetAsync(SecureStorageKey, path);
+                #if ANDROID
+                    string? PATH_LOG = Android.App.Application.Context?.GetExternalFilesDir("")?.AbsolutePath.ToString();
+
+                #elif IOS
+                    string? PATH_LOG = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Library/Caches");
+                #endif
+
+                await SecureStorage.SetAsync(SecureStorageKey, PATH_LOG);
                 return true;
             }
             catch (Exception ex)

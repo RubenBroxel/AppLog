@@ -1,39 +1,33 @@
-﻿
-using Android.Util;
-using LogApp.Services.ServicesManager;
-using LogApp.Services.ServicesManager.Models;
+﻿using LogApp.Services.ServicesManager.Models;
+using Microsoft.Extensions.Logging;
 
 namespace LogApp.Services;
 
 public partial class CommentPage : ContentPage
 {
 	private IManager _manager;
-	IServiceProvider _provider;
-	public CommentPage(IManager manager)
+	ILogger<CommentPage> _logger;
+	public CommentPage(IManager manager, ILogger<CommentPage> logger)
 	{
 		InitializeComponent();
 		_manager = manager;
+		_logger = logger;
 	}
 
    	private async void OnCounterClicked(object sender, EventArgs e)
-	{
-		string user = "John Tobbias";
-		string pass = "1234";
-		
-		//string pasword = "";
-		//await Xamarin.Essentials.SecureStorage.SetAsync("Password",SendCommentBtn.Text);
-		try
+	{	
+		if (!string.IsNullOrEmpty(ClosePageBtn.Text))
 		{
-			UserCredentials userCredentials = new UserCredentials(user,pass);
-			_manager.MicroServiceAuthAsync(userCredentials);
-			//_logger.LogInformation(CounterBtn.Text , DateTime.UtcNow.ToLongTimeString());
-			//pasword = await Xamarin.Essentials.SecureStorage.GetAsync("Password");
-			//await DisplayAlert("Secure Success",pasword,"Ok");
-			//_manager.MicroServiceAuthAsync( );
+			string user = "John Tobbias";
+			string pass = "1234";
+			_logger.LogInformation("Iniciando autenticación con usuario: {user}", user);
+			UserCredentials userCredentials = new UserCredentials(user, pass);
+			await _manager?.MicroServiceAuthAsync(userCredentials); 
 		}
-		catch
+		else
 		{
-			await DisplayAlert("Secure Error","Aun no tiene","Ok");
+			// Si ClosePageBtn.Text no está vacío, muestra el aviso
+			await DisplayAlert("Aviso", "Escriba un comentario para envío", "Ok"); 
 		}
 	}	
 

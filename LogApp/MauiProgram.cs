@@ -7,15 +7,21 @@ using LogApp.Services.Security;
 using LogApp.Services.Security.Contracts;
 using LogApp.Services.ServicesManager.Models;
 using LogApp.Services.Security.Storage;
+using LogApp.Services.FileSystem.Local;
+using LogApp.Services.FileSystem.MicroService;
 
 
 namespace LogApp;
 
 public static class MauiProgram
 {
-	//FileSystem.Current.AppDataDirectory(   data/user/0/com.demotechnical.logapp/files/DemoTechnical)
-	static string PATH_LOG="/storage/emulated/0/Android/data/com.demotechnical.logapp/";
-	const string FILE_LOG_NAME = "DemoTechnical";
+	// "/storage/emulated/0/Android/data/com.demotechnical.logapp/files"
+	#if ANDROID
+			static string? PATH_LOG = Android.App.Application.Context?.GetExternalFilesDir("")?.AbsolutePath.ToString();
+
+	#elif IOS
+		static string? PATH_LOG = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Library/Caches");
+	#endif
 
 	public static MauiApp CreateMauiApp()
 	{
@@ -46,8 +52,7 @@ public static class MauiProgram
                 options =>
                 {
                     options.RetainDays = 1;
-                    options.FolderPath = Path.Combine( PATH_LOG, FILE_LOG_NAME );
-                    //options.FolderPath = Path.Combine( FileSystem.Current.AppDataDirectory,FILE_LOG_NAME); //PATH_LOG, FILE_LOG_NAME );
+                    options.FolderPath = Path.Combine( PATH_LOG );
                 });
 
         #if DEBUG
