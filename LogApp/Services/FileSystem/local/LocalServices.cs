@@ -12,24 +12,18 @@ using System.Text;
 */
 public class LocalServices: IFileServices
 {
-    private readonly HttpClient _httpClient;
     private const string FileNameKey = "MySecureFile";
 
-    public LocalServices(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
-    public Stream? SearchLogFile()
+    public Stream? SearchLogFile(string path)
     {
         // Obtener la ruta de la carpeta principal de la aplicación
         //string carpetaPrincipal =FileSystem.Current.AppDataDirectory;
-        string carpetaPrincipal = "/storage/emulated/0/Android/data/com.demotechnical.logapp/DemoTechnical/";
+        string carpetaPrincipal = path;//"/storage/emulated/0/Android/data/com.demotechnical.logapp/DemoTechnical/";
 
         // Crear el patrón de búsqueda para el archivo log
         string fechaActual = DateTime.Now.ToString("yyyyMMdd");
         string nombreArchivo = $"Log - {fechaActual}.log";
-        string patronBusqueda = $"*{nombreArchivo}";
+        string patronBusqueda = $"{nombreArchivo}";
 
         // Buscar el archivo log en la carpeta principal
         string[] archivosEncontrados = Directory.GetFiles(carpetaPrincipal, patronBusqueda);

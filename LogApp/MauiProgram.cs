@@ -13,7 +13,7 @@ namespace LogApp;
 
 public static class MauiProgram
 {
-	//FileSystem.Current.AppDataDirectory(data/user/0/com.demotechnical.logapp/files/DemoTechnical)
+	//FileSystem.Current.AppDataDirectory(   data/user/0/com.demotechnical.logapp/files/DemoTechnical)
 	static string PATH_LOG="/storage/emulated/0/Android/data/com.demotechnical.logapp/";
 	const string FILE_LOG_NAME = "DemoTechnical";
 
@@ -67,7 +67,7 @@ public static class MauiProgram
 		{
 			return new HttpClient()
 			{
-				BaseAddress = new Uri("http://10.100.8.5:8080/")
+				BaseAddress = new Uri("http://10.100.8.4:8080/")
 			};
 		});
 	

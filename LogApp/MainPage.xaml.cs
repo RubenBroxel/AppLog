@@ -1,12 +1,11 @@
-﻿using LogApp.Services.ServicesManager;
-using LogApp.Services.ServicesManager.Models;
+﻿using LogApp.Services.ServicesManager.Models;
+using LogApp.Services;
 
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using LogApp.Services;
 
 namespace LogApp;
 
@@ -38,6 +37,7 @@ public partial class MainPage : ContentPage
 
 		var commentPage = _serviceProvider.GetRequiredService<CommentPage>();
         await Navigation.PushAsync(commentPage);
+		_logger.LogInformation("Hola mundo");
 		
 	}
 

@@ -1,4 +1,4 @@
 public interface IFileServices
 {
-      Stream? SearchLogFile();
+      Stream? SearchLogFile(string path);
 }

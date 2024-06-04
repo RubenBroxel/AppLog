@@ -4,7 +4,25 @@ namespace LogApp.Services.Security.Cypher;
 public class RsaServices
 {
     private const int KeySize = 2048;
+
     private string? LogAccess = Guid.NewGuid().ToString() + "-" + DateTime.Today.ToString();
+    private string publicKey;
+    private string privateKey;
+
+    public RsaServices()
+    {
+        GenerateKeysForLog();
+    }
+
+    private void GenerateKeysForLog()
+    {
+        GenerateKeys(out publicKey, out privateKey);
+    }
+
+    public string GetKey()
+    {
+        return LogAccess;
+    }
 
     public static void GenerateKeys(out string publicKey, out string privateKey)
     {
@@ -13,6 +31,15 @@ public class RsaServices
         privateKey = rsa.ToXmlString(true);
     }
 
+    public byte[] EncryptData(byte[] dataToEncrypt)
+    {
+        return EncryptData(dataToEncrypt, publicKey);
+    }
+
+    public byte[] DecryptData(byte[] dataToDecrypt)
+    {
+        return DecryptData(dataToDecrypt, privateKey);
+    }
 
     public static byte[] EncryptData(byte[] dataToEncrypt, string publicKeyXml)
     {
@@ -20,7 +47,6 @@ public class RsaServices
         rsa.FromXmlString(publicKeyXml);
         return rsa.Encrypt(dataToEncrypt, RSAEncryptionPadding.OaepSHA256);
     }
-
 
     public static byte[] DecryptData(byte[] dataToDecrypt, string privateKeyXml)
     {

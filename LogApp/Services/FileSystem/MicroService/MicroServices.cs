@@ -58,6 +58,12 @@ public class MicroServices: IMicroServices
                     System.Diagnostics.Debug.WriteLine(file);
                     result = UPLOAD_SERVICE_SUCCESS;
                 }
+                else
+                {
+                    #if DEBUG
+			        Console.WriteLine("Algo paso");
+                    #endif
+                }
             }
 		}
 		catch(HttpRequestException ex)
