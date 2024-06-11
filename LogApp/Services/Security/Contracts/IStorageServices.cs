@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace LogApp.Services.Security.Contracts;
 
-public interface IStorageService
+public interface IStorageServices
 {
     Task<bool> SaveSecurePathAsync();
     Task<string> GetSecurePathAsync();

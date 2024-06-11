@@ -1,10 +1,20 @@
+using LogApp.Services.FileSystem.Contracts;
+using LogApp.Services.Security.Contracts;
+
 namespace LogApp.Services.FileSystem.Local;
  /*
     Descripcion:
     Clase para activar el envio de archivos al MicroServicio para Logs
 */
-public class LocalServices: IFileServices
+public class LocalService: IFileServices
 {
+    private readonly ICypherServices _cypherServices;
+
+    public LocalService(ICypherServices cypherServices)
+    {
+        _cypherServices = cypherServices;
+    }
+
     public Stream? SearchLogFile(string path)
     {
         string carpetaPrincipal = path;
@@ -14,6 +24,7 @@ public class LocalServices: IFileServices
         string patronBusqueda = $"{nombreArchivo}";
         // Buscar el archivo log en la carpeta principal
         string[] archivosEncontrados = Directory.GetFiles(carpetaPrincipal, patronBusqueda);
+
         // Verificar si se encontró algún archivo
         if (archivosEncontrados.Length > 0)
         {

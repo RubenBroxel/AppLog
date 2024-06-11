@@ -1,5 +1,5 @@
 using LogApp.Services.ServicesManager.Models;
 public interface IMicroServices
 {
-     Task<string> MicroServicesAsync(LogMicroService logMicroService);
+     Task<string> MicroServicesAsync(LogModelService logMicroService);
 }

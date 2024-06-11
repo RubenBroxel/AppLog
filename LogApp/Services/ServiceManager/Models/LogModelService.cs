@@ -1,6 +1,6 @@
 
 namespace LogApp.Services.ServicesManager.Models;
-public class LogMicroService
+public class LogModelService
 {
     //
     private Stream? FileStream;
@@ -14,7 +14,7 @@ public class LogMicroService
     private readonly string? LOGFILE_UPLOAD_SERVICE = "logservice";
     #endregion
 
-    public LogMicroService(Stream fileStream, string fileName, string tokenUser)
+    public LogModelService(Stream fileStream, string fileName, string tokenUser)
     {
         FileStream = fileStream;
         FileName   = fileName;

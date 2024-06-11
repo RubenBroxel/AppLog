@@ -6,7 +6,6 @@ namespace LogApp;
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
 	ILogger<MainPage> _logger;
 
 	private readonly IServiceProvider _serviceProvider;
@@ -23,5 +22,6 @@ public partial class MainPage : ContentPage
 		var commentPage = _serviceProvider.GetRequiredService<CommentPage>();
         await Navigation.PushAsync(commentPage);
 	}
+	
 }
 

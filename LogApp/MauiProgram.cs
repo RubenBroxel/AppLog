@@ -9,6 +9,8 @@ using LogApp.Services.ServicesManager.Models;
 using LogApp.Services.Security.Storage;
 using LogApp.Services.FileSystem.Local;
 using LogApp.Services.FileSystem.MicroService;
+using LogApp.Services.Security.Cypher;
+using LogApp.Services.FileSystem.Contracts;
 
 
 namespace LogApp;
@@ -17,7 +19,7 @@ public static class MauiProgram
 {
 	// "/storage/emulated/0/Android/data/com.demotechnical.logapp/files"
 	#if ANDROID
-			static string? PATH_LOG = Android.App.Application.Context?.GetExternalFilesDir("")?.AbsolutePath.ToString();
+		static string? PATH_LOG = Android.App.Application.Context?.GetExternalFilesDir("")?.AbsolutePath.ToString();
 
 	#elif IOS
 		static string? PATH_LOG = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Library/Caches");
@@ -72,14 +74,17 @@ public static class MauiProgram
 		{
 			return new HttpClient()
 			{
-				BaseAddress = new Uri("http://10.100.8.4:8080/")
+				//BaseAddress = new Uri("http://10.100.8.12:8080/")
+				BaseAddress = new Uri("http://10.100.8.12:5484")
 			};
 		});
 	
-		mauiAppBuilder.Services.AddTransient<IMicroServices,MicroServices>();
-		mauiAppBuilder.Services.AddTransient<IFileServices,LocalServices>();
-		mauiAppBuilder.Services.AddTransient<IStorageService,StorageService>();
-		mauiAppBuilder.Services.AddTransient<IUserSessionServices,UserSessionServices>();
+		mauiAppBuilder.Services.AddTransient<IMicroServices,MicroService>();
+		mauiAppBuilder.Services.AddTransient<IFileServices,LocalService>();
+		mauiAppBuilder.Services.AddTransient<IStorageServices,StorageService>();
+		mauiAppBuilder.Services.AddTransient<ICypherServices,Aes256Service>();
+		mauiAppBuilder.Services.AddTransient<IUserSessionServices,LogMicroService>();
+		mauiAppBuilder.Services.AddTransient<IAccountMicroService,AccountMicroService>();
 		mauiAppBuilder.Services.AddTransient<IManager,Manager>();
 
 		return mauiAppBuilder;
@@ -87,9 +92,9 @@ public static class MauiProgram
 
 	public static MauiAppBuilder RegisterModels(this MauiAppBuilder mauiAppBuilder)
 	{
-		mauiAppBuilder.Services.AddSingleton<JsonLogToken>();
-		mauiAppBuilder.Services.AddSingleton<LogLocal>();
-		mauiAppBuilder.Services.AddSingleton<LogMicroService>();
+		mauiAppBuilder.Services.AddSingleton<LogModelToken>();
+		mauiAppBuilder.Services.AddSingleton<LogModelService>();
+		mauiAppBuilder.Services.AddSingleton<AccountModelService>();
 		mauiAppBuilder.Services.AddSingleton<UserCredentials>();
 
 		return mauiAppBuilder;

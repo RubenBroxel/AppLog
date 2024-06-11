@@ -16,13 +16,15 @@ public partial class CommentPage : ContentPage
 
    	private async void OnCounterClicked(object sender, EventArgs e)
 	{	
-		if (!string.IsNullOrEmpty(ClosePageBtn.Text))
+		if (!string.IsNullOrEmpty(CommentEdt.Text))
 		{
 			string user = "John Tobbias";
 			string pass = "1234";
-			_logger.LogInformation("Iniciando autenticación con usuario: {user}", user);
+			_logger.LogInformation(user + " - " +CommentEdt.Text);
 			UserCredentials userCredentials = new UserCredentials(user, pass);
-			await _manager?.MicroServiceAuthAsync(userCredentials); 
+			var credencial = await _manager.MicroServiceAuthAccountAsync(userCredentials);
+			//var mensaje    = await _manager?.MicroServiceAuthAccountAsync(credencial); 
+			//await DisplayAlert("Aviso", mensaje, "Ok"); 
 		}
 		else
 		{

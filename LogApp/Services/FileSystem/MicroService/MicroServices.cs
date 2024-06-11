@@ -6,19 +6,18 @@ namespace LogApp.Services.FileSystem.MicroService;
    Descripcion:
    Clase para activar el envio de archivos al MicroServicio para Logs
 */
-public class MicroServices: IMicroServices
+public class MicroService: IMicroServices
 {
     private readonly HttpClient _httpClient;
-
     private readonly string UPLOAD_SERVICE_SUCCESS = "Registro enviado con exito";
     private readonly string UPLOAD_SERVICE_FAILD = "Upps!... algo ocurrio durante el envio, favor de volver a intentar.";
 
-    public MicroServices(HttpClient httpClient)
+    public MicroService( HttpClient httpClient )
     {
         _httpClient = httpClient;
     }
 
-    public async Task<string> MicroServicesAsync(LogMicroService logMicroService)
+    public async Task<string> MicroServicesAsync(LogModelService logMicroService)
 	{
         string? result = null;
         try

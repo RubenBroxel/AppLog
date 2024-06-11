@@ -3,5 +3,6 @@ using LogApp.Services.ServicesManager.Models;
 
 public interface IManager
 {
-    Task<string> MicroServiceAuthAsync(UserCredentials userCredentials );
+    Task<AccountModelService> MicroServiceAuthAccountAsync(UserCredentials userCredentials );
+    Task<string> MicroServiceSendLogAsync(AccountModelService userCredentials );
 }
