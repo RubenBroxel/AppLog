@@ -3,5 +3,5 @@ namespace LogApp.Services.Security.Contracts;
 
 public interface IUserSessionServices
 {
-    Task<string> GetTokenServiceAsync(AccountModelService userCredential);
+    Task<string> GetTokenServiceAsync(ModelAccountService userCredential);
 }

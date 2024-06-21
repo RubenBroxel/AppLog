@@ -54,7 +54,7 @@ public static class MauiProgram
                 options =>
                 {
                     options.RetainDays = 1;
-                    options.FolderPath = Path.Combine( PATH_LOG );
+                    options.FolderPath = Path.Combine( PATH_LOG ?? "" );
                 });
 
         #if DEBUG
@@ -70,14 +70,19 @@ public static class MauiProgram
 
 	public static MauiAppBuilder RegisterServices(this MauiAppBuilder mauiAppBuilder)
 	{
+		/*	
 		mauiAppBuilder.Services.AddTransient<HttpClient>(o =>
 		{
 			return new HttpClient()
 			{
-				//BaseAddress = new Uri("http://10.100.8.12:8080/")
+				//BaseAddress = new Uri("http://10.100.8.12:8484/")
 				BaseAddress = new Uri("http://10.100.8.12:5484")
 			};
-		});
+		});*/
+
+		mauiAppBuilder.Services.AddTransient<HttpClient>();
+    // Registrar HttpClient con nombre para el API principal
+   
 	
 		mauiAppBuilder.Services.AddTransient<IMicroServices,MicroService>();
 		mauiAppBuilder.Services.AddTransient<IFileServices,LocalService>();
@@ -93,9 +98,9 @@ public static class MauiProgram
 	public static MauiAppBuilder RegisterModels(this MauiAppBuilder mauiAppBuilder)
 	{
 		mauiAppBuilder.Services.AddSingleton<LogModelToken>();
-		mauiAppBuilder.Services.AddSingleton<LogModelService>();
-		mauiAppBuilder.Services.AddSingleton<AccountModelService>();
-		mauiAppBuilder.Services.AddSingleton<UserCredentials>();
+		mauiAppBuilder.Services.AddSingleton<ModelMicroService>();
+		mauiAppBuilder.Services.AddSingleton<ModelAccountService>();
+		mauiAppBuilder.Services.AddSingleton<ModelCredentialService>();
 
 		return mauiAppBuilder;
 	}

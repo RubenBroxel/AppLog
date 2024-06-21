@@ -18,7 +18,11 @@ public class StorageService: IStorageServices
 
             #elif IOS
                 string? PATH_LOG = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Library/Caches");
+            #else
+                // Manejo para otras plataformas si es necesario.
+                string? PATH_LOG =  null;
             #endif
+
 
             await SecureStorage.SetAsync(SecureStorageKey, PATH_LOG);
             return true;

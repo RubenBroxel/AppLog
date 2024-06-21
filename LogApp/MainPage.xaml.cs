@@ -6,14 +6,11 @@ namespace LogApp;
 
 public partial class MainPage : ContentPage
 {
-	ILogger<MainPage> _logger;
-
 	private readonly IServiceProvider _serviceProvider;
 
-	public MainPage(IServiceProvider serviceProvider ,ILogger<MainPage> logger, HttpClient httpClient )
+	public MainPage(IServiceProvider serviceProvider)
 	{
 		InitializeComponent();
-		_logger = logger;
 		_serviceProvider = serviceProvider;
 	}
 

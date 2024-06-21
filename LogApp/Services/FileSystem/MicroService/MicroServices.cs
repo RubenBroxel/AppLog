@@ -2,63 +2,59 @@ using System.Net.Http.Headers;
 using LogApp.Services.ServicesManager.Models;
 
 namespace LogApp.Services.FileSystem.MicroService;
-/*
-   Descripcion:
-   Clase para activar el envio de archivos al MicroServicio para Logs
-*/
-public class MicroService: IMicroServices
-{
-    private readonly HttpClient _httpClient;
-    private readonly string UPLOAD_SERVICE_SUCCESS = "Registro enviado con exito";
-    private readonly string UPLOAD_SERVICE_FAILD = "Upps!... algo ocurrio durante el envio, favor de volver a intentar.";
 
-    public MicroService( HttpClient httpClient )
+public class MicroService : IMicroServices
+{
+    private readonly string UploadServiceSuccess = "Registro enviado con exito";
+    private readonly string UploadServiceFailed = "Upps!... algo ocurrio durante el envio, favor de volver a intentar.";
+
+    private readonly HttpClient _httpClient;
+    private readonly string _urlServiceAccount = "http://10.100.8.2:8484/";
+
+    public MicroService(HttpClient httpClient)
     {
         _httpClient = httpClient;
+        _httpClient.BaseAddress = new Uri(_urlServiceAccount);
     }
 
-    public async Task<string> MicroServicesAsync(LogModelService logMicroService)
-	{
-        string? result = null;
+    public async Task<string> MicroServicesAsync(ModelMicroService logMicroService)
+    {
         try
-		{   
-            if( logMicroService.InvokeLogObject() != null)
+        {
+            using var stream = logMicroService.GetFileStream();
+            if (stream == null)
             {
-
-                using var stream = logMicroService.InvokeLogObject();
-                var broxelLog = ImageSource.FromStream(() => stream);
-
-                using var content = new MultipartFormDataContent();
-                content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
-                using var contenido = new StreamContent(logMicroService.InvokeLogObject(), (int)logMicroService.InvokeLogObject().Length);
-                content.Add(contenido,logMicroService.InvokeSuport(),logMicroService.InvokeLogObjectName());
-                
-                _httpClient.DefaultRequestHeaders.Accept.Clear();
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(logMicroService.InvokeLogObjectValidator());
-                
-                using HttpResponseMessage response = await _httpClient.PostAsync(logMicroService.InvokeLogService(),content);
-                if(response.IsSuccessStatusCode)
-                {
-                    var file = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine(file);
-                    result = UPLOAD_SERVICE_SUCCESS;
-                }
-                else
-                {
-                    result = UPLOAD_SERVICE_FAILD;
-                    #if DEBUG
-			        Console.WriteLine(UPLOAD_SERVICE_FAILD);
-                    #endif
-                }
+                return UploadServiceFailed; 
             }
-		}
-		catch(Exception ex)
-		{
-            result = UPLOAD_SERVICE_FAILD;
-			#if DEBUG
-			    Console.WriteLine( ex.Message.ToString());
-            #endif
-		}
-        return result;
+
+            using var content = new MultipartFormDataContent
+            {
+                { new StreamContent(stream, (int)stream.Length), logMicroService.GetSupportType(), logMicroService.GetFileName() }
+            };
+
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(logMicroService.GetTokenValid());
+
+            using var response = await _httpClient.PostAsync(logMicroService.GetLogMicroService(), content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                // Evitando el warning de consola utilizando la variable 'file' solo si DEBUG está activo
+                #if DEBUG
+                var file = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine(file); 
+                #endif
+
+                return UploadServiceSuccess;
+            }
+            
+            System.Diagnostics.Debug.WriteLine(UploadServiceFailed); // Usando Debug.WriteLine en lugar de Console.WriteLine
+            return UploadServiceFailed;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex.ToString()); // Usando Debug.WriteLine en lugar de Console.WriteLine
+            return UploadServiceFailed; 
+        }
     }
 }

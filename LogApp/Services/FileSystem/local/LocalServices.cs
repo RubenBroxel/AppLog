@@ -8,13 +8,6 @@ namespace LogApp.Services.FileSystem.Local;
 */
 public class LocalService: IFileServices
 {
-    private readonly ICypherServices _cypherServices;
-
-    public LocalService(ICypherServices cypherServices)
-    {
-        _cypherServices = cypherServices;
-    }
-
     public Stream? SearchLogFile(string path)
     {
         string carpetaPrincipal = path;

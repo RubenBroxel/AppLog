@@ -3,188 +3,135 @@ using Newtonsoft.Json;
 using LogApp.Services.Security.Contracts;
 using LogApp.Services.ServicesManager.Models;
 
-using System.Net.Http;
-using Microsoft.Maui.Devices.Sensors;
-#if IOS
-using CoreLocation;
-using Foundation;
-#endif
-
 namespace LogApp.Services.Security;
 
-/*
-    Clase con responsabilidad para hacer inicio de sesion para las cuentas de servicio
-*/
-public class AccountMicroService: IAccountMicroService
+/// <summary>
+/// Clase con responsabilidad de manejar el inicio de sesión para las cuentas de servicio.
+/// </summary>
+public class AccountMicroService : IAccountMicroService
 {
     private readonly HttpClient _httpClient;
+    private readonly string UrlServiceAccount = "http://10.100.8.2:5484/";
+
     public AccountMicroService(HttpClient httpClient)
     {
         _httpClient = httpClient;
+        _httpClient.BaseAddress = new Uri(UrlServiceAccount);
     }
 
-    ///<summary>
-    ///Método para el inico de sesion para cuenta de servicio general
-    ///</summary>
-    public async Task<string> GetTokenServiceAsync(UserCredentials userCredentials)
+    /// <summary>
+    /// Obtiene un token de autenticación para una cuenta de servicio.
+    /// </summary>
+    /// <param name="userCredentials">Credenciales de la cuenta de servicio.</param>
+    /// <returns>Un <see cref="Task{TResult}"/> que representa la operación asíncrona. 
+    /// El resultado es el token de autenticación o una cadena vacía si ocurre un error.</returns>
+    public async Task<string> GetTokenServiceAsync(ModelCredentialService userCredentials)
     {
-        string? TokenLog = null;
         try
-        {        
-            var userJson = userCredentials;//new { Username = "John Tobbias", Password = "1234" };
+        {
+            var userJson = new { Username = userCredentials.UserName, Password = userCredentials.UserPassword };
             var jsonContent = JsonConvert.SerializeObject(userJson);
-
-            // Crear el contenido HTTP directamente con el JSON serializado
             using var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Realizar la solicitud POST
+			_httpClient.DefaultRequestHeaders.Accept.Clear();
             using var response = await _httpClient.PostAsync("api/auth/user", httpContent);
 
-            // Verificar el estado de la respuesta
             if (response.IsSuccessStatusCode)
             {
-                // Deserializar la respuesta directamente en el objeto deseado
                 var jsonresponse = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<LogModelToken>(jsonresponse);
-                TokenLog = result?.TokenLog;	
+                return result?.TokenLog ?? string.Empty;
             }
-            else
-            {
-                // Manejar errores del servidor
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Error al obtener el token: {errorMessage}");
-            }
-        
-        }catch(HttpRequestException ex)
-        {   
-            #if DEBUG
-                Console.WriteLine(ex.Message.ToString());
-            #endif
-            return TokenLog = ex.Message.ToString();
+
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Error al obtener el token: {errorMessage}", null, response.StatusCode);
         }
-        return TokenLog;
+        catch (HttpRequestException ex)
+        {
+            // Manejo de errores de solicitud HTTP.
+            // Puedes registrar la excepción o manejarla de otra manera según tus necesidades.
+            System.Diagnostics.Debug.WriteLine($"Error en la solicitud HTTP: {ex.Message}");
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            // Manejo de otras excepciones.
+            System.Diagnostics.Debug.WriteLine($"Error al obtener el token: {ex.Message}");
+            return string.Empty;
+        }
     }
 
-    public async Task<AccountModelService> CreateServiceAccountAsync(string token)
+    /// <summary>
+    /// Crea un nuevo objeto <see cref="AccountModelService"/> con información del dispositivo.
+    /// </summary>
+    /// <param name="token">Token de autenticación.</param>
+    /// <returns>Un <see cref="Task{TResult}"/> que representa la operación asíncrona. 
+    /// El resultado es un <see cref="AccountModelService"/> con la información del dispositivo.</returns>
+    public async Task<ModelAccountService> CreateServiceAccountAsync(string token)
     {
-        AccountModelService cuentaServicio = new AccountModelService(token);
-        if(!String.IsNullOrEmpty(token))
+        var cuentaServicio = new ModelAccountService(token);
+        if (!string.IsNullOrEmpty(token))
         {
-            cuentaServicio.appIpAddress = await GetPublicIpAsync();
-            cuentaServicio.appCountry   = await GetCountryFromLocationAsync();
-            cuentaServicio.appLocation  = await GetLocationAsync();
+            cuentaServicio.AppIpAddress = await GetPublicIpAsync();
+            cuentaServicio.AppCountry   = await GetCountryFromLocationAsync();
+            cuentaServicio.AppLocation  = await GetLocationAsync();
         }
         return cuentaServicio;
     }
 
-	private async Task<string> GetPublicIpAsync()
-	{
-		try
-		{
-			using (var httpClient = new HttpClient())
-			{
-				var response = await httpClient.GetAsync("https://api.ipify.org"); 
-				response.EnsureSuccessStatusCode();
-				return await response.Content.ReadAsStringAsync();
-			}
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"Error al obtener la IP pública: {ex.Message}");
-			return null; 
-		}
-	}
+    private async Task<string> GetPublicIpAsync()
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            using var response = await httpClient.GetAsync("https://api.ipify.org");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            // Manejo de excepciones al obtener la IP pública.
+            System.Diagnostics.Debug.WriteLine($"Error al obtener la IP pública: {ex.Message}");
+            return string.Empty;
+        }
+    }
 
-	private async Task<Location?> GetLocationAsync()
-	{
-		#if ANDROID
-		try
-		{
-			// Solicitar permisos al usuario si no se han concedido.
-			var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
-			var location = await Geolocation.Default.GetLocationAsync(request);
+    private async Task<Location?> GetLocationAsync()
+    {
+        try
+        {
+            var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+            var location = await Geolocation.Default.GetLocationAsync(request);
+            return location;
+        }
+        catch (Exception ex)
+        {
+            // Manejo de excepciones al obtener la ubicación.
+            System.Diagnostics.Debug.WriteLine($"Error al obtener la ubicación: {ex.Message}");
+            return null;
+        }
+    }
 
-			if (location != null)
-			{
-				Console.WriteLine($"Latitud: {location.Latitude}, Longitud: {location.Longitude}, Altitud: {location.Altitude}");
-				return location;
-			}
-			else
-			{
-				Console.WriteLine("No se pudo obtener la ubicación.");
-				return null;
-			}
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"Error al obtener la ubicación: {ex.Message}");
-			return null;
-		}
+    private async Task<string> GetCountryFromLocationAsync()
+    {
+        try
+        {
+            var request = new GeolocationRequest(GeolocationAccuracy.Medium);
+            var location = await Geolocation.GetLocationAsync(request);
 
-		#elif IOS
-		try
-		{
-			var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
-			var location = await Geolocation.GetLocationAsync(request);
+            if (location != null)
+            {
+                var placemarks = await Geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
+                var placemark = placemarks?.FirstOrDefault();
+                return placemark?.CountryName ?? "País no encontrado";
+            }
 
-			if (location != null)
-			{
-				Console.WriteLine($"Latitud: {location.Latitude}, Longitud: {location.Longitude}, Altitud: {location.Altitude}");
-				return location;
-			}
-			return null;
-		}
-		catch (FeatureNotSupportedException fnsEx)
-		{
-			return null;
-			// Manejar la excepción si el dispositivo no soporta la geolocalización
-		}
-		catch (FeatureNotEnabledException fneEx)
-		{
-			return null;
-			// Manejar la excepción si la geolocalización no está habilitada en el dispositivo
-		}
-		catch (PermissionException pEx)
-		{
-			return null;
-			// Manejar la excepción si no se tienen los permisos necesarios
-		}
-		catch (Exception ex)
-		{
-			return null;
-			// Manejar cualquier otra excepción
-		}
-		// Manejar las mismas excepciones que en el ejemplo anterior
-		#endif
-	}
-
-	private async Task<string> GetCountryFromLocationAsync()
-	{
-		try
-		{
-			var request = new GeolocationRequest(GeolocationAccuracy.Medium);
-			var location = await Geolocation.GetLocationAsync(request);
-
-			if (location != null)
-			{
-				// Obtener la dirección a partir de las coordenadas.
-				var placemarks = await Geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
-				var placemark = placemarks?.FirstOrDefault();
-
-				// Devolver el país.
-				return placemark?.CountryName ?? "País no encontrado";
-			}
-			else
-			{
-				return "No se pudo obtener la ubicación.";
-			}
-		}
-		catch (Exception ex)
-		{
-			// Manejar excepciones (por ejemplo, permisos denegados).
-			Console.WriteLine($"Error al obtener la ubicación: {ex.Message}");
-			return "Error al obtener la ubicación";
-		}
-	}
-
+            return "No se pudo obtener la ubicación.";
+        }
+        catch (Exception ex)
+        {
+            // Manejo de excepciones al obtener el país.
+            System.Diagnostics.Debug.WriteLine($"Error al obtener la ubicación: {ex.Message}");
+            return "Error al obtener la ubicación";
+        }
+    }
 }

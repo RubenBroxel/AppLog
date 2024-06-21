@@ -19,6 +19,7 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<LogMicroService>Fintech.Logger.Services.Account</LogMicroService>
 
 		<!-- Display name -->
 		<ApplicationTitle>LogApp</ApplicationTitle>
